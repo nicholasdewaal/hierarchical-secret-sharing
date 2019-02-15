@@ -1,11 +1,12 @@
 
 
 from secretsharing import SecretSharer
+import pickle
 from pdb import set_trace
 
 '''
-hierarchy_structure is a tuple beginning with two numbers: n, then m, with n <= m,
-then followed by m tuples and/or strings.
+hierarchy_structure is a tuple beginning with two numbers: n, then m,
+with n <= m, then followed by m tuples and/or strings.
 Each contained tuple also must be a hierarchy_structure type thus having to
 follow the same conventions.
 
@@ -70,22 +71,22 @@ def is_well_defined_hierarchy(hierarchy_structure):
     return True, all_names
 
 
-def secret_is_recoverable(keys, hierarchy_structure):
+def secret_is_recoverable(shares, hierarchy_structure):
     '''
-    This function recursively checks to see if the keys provided combined
+    This function recursively checks to see if the shares provided combined
     with the given hierarchy_structure is enough to recover the secret.
     '''
 
     n, m, hierarchy = hierarchy_structure
-    num_keys_available = 0
+    num_shares_available = 0
     for ii, sub_hierarchy in enumerate(hierarchy):
         if type(sub_hierarchy) is str:
-            if len(keys[sub_hierarchy]) > 0:
-                num_keys_available += 1
-        elif secret_is_recoverable(keys, sub_hierarchy):
-                num_keys_available += 1
+            if len(shares[sub_hierarchy]) > 0:
+                num_shares_available += 1
+        elif secret_is_recoverable(shares, sub_hierarchy):
+                num_shares_available += 1
 
-    if num_keys_available > n:
+    if num_shares_available > n:
         return True
     else:
         return False
@@ -119,7 +120,7 @@ def hex_ssss_encrypt(n, m, hex_secret):
         int(hex_secret, 16)
     except ValueError:
         print('not a valid hexidecimal value.')
-    # There's no need to encrypt if only one of m needs to provide the key
+    # There's no need to encrypt if only one of m needs to provide the share
     if n == 1:
         shares = [hex_secret] * m
     else:
@@ -135,29 +136,29 @@ def recursive_ss_encrypt_hex(hex_to_encrypt, hierarchy_structure):
     collecting the shared secrets to recover the initial secret
     hex_to_encrypt.
 
-    This returns a dictionary of people and their associated keys to
+    This returns a dictionary of people and their associated shares to
     distribute to each that they will need to provide for recovering the
     secret represented in hexidecimal as hex_to_encrypt.
     '''
 
-    assigned_keys = dict()
+    assigned_shares = dict()
     n, m, hierarchy = hierarchy_structure
-    keys = hex_ssss_encrypt(n, m, hex_to_encrypt)
+    shares = hex_ssss_encrypt(n, m, hex_to_encrypt)
 
     for ii, sub_hierarchy in enumerate(hierarchy):
         if type(sub_hierarchy) is str:
-            assigned_keys[sub_hierarchy] = keys[ii]
+            assigned_shares[sub_hierarchy] = shares[ii]
         else:
-            sub_keys = recursive_ss_encrypt_hex(keys[ii], sub_hierarchy)
-            assigned_keys.update(sub_keys)
-    return assigned_keys
+            sub_shares = recursive_ss_encrypt_hex(shares[ii], sub_hierarchy)
+            assigned_shares.update(sub_shares)
+    return assigned_shares
 
 
 def hierarchical_secret_share_encrypt(string_to_encrypt, hierarchy_structure):
 
     '''
-    Generate hierarchical secret sharing keys after checking if
-    hierarchy_structure is well defined.
+    Generate hierarchical secret shares after checking if hierarchy_structure
+    is well defined.
     '''
 
     try:
@@ -187,30 +188,33 @@ def hex_ssss_decrypt(in_shares):
     return SecretSharer.recover_secret(shares)
 
 
-def recover_secret_ss_hex(user_keys, hierarchy_structure):
+def recover_secret_ss_hex(user_shares, hierarchy_structure):
     '''
-    user_keys is a dict of keys with {user_name: secret_key, ...}. The
+    user_shares is a dict of shares with {user_name: secret_share, ...}. The
     user_names should match the strings of users in the hierarchy_structure.
     '''
 
     n, m, hierarchy = hierarchy_structure
-    recovery_keys = list()
+    recovery_shares = list()
+    user_names = user_shares.keys()
 
     for ii, sub_hierarchy in enumerate(hierarchy):
         if type(sub_hierarchy) is str:
-            recovery_keys.append(user_keys[sub_hierarchy])
+            if sub_hierarchy in user_names:
+                recovery_shares.append(user_shares[sub_hierarchy])
         else:
-            recovery_sub_keys = recover_secret_ss_hex(user_keys, sub_hierarchy)
-            recovery_keys.extend(recovery_sub_keys)
+            recovery_sub_shares = recover_secret_ss_hex(user_shares,
+                                                        sub_hierarchy)
+            recovery_shares.extend(recovery_sub_shares)
 
-    # if only one key is required to recover, then that is the result
+    # if only one share is required to recover, then that is the result
     if n == 1:
-        return user_keys[0]
+        return user_shares[0]
     else:
-        return hex_ssss_decrypt(recovery_keys)
+        return hex_ssss_decrypt(recovery_shares)
 
 
-def recover_secret_hierarchical_ss(keys, hierarchy_structure):
+def recover_secret_hierarchical_ss(shares, hierarchy_structure):
 
     try:
         well_def, _ = is_well_defined_hierarchy(hierarchy_structure)
@@ -219,14 +223,33 @@ def recover_secret_hierarchical_ss(keys, hierarchy_structure):
         print('hierarchy structure of encryption scheme is not well defined!')
 
     try:
-        assert secret_is_recoverable(keys, hierarchy_structure)
+        assert secret_is_recoverable(shares, hierarchy_structure)
     except:
         print('hierarchy structure of encryption scheme is not well defined!')
 
     set_trace()
-    hex_secret = recover_secret_ss_hex(keys, hierarchy_structure)
+    hex_secret = recover_secret_ss_hex(shares, hierarchy_structure)
     return hex_to_utf8(hex_secret)
 
 
+def hierarchical_ssss_to_files(string_to_encrypt, hierarchy_structure):
+    shares = hierarchical_secret_share_encrypt(string_to_encrypt,
+                                               hierarchy_structure)
+    with open('Required_hierarchy_structure.txt', 'w') as f:
+        f.write("Use the share files for the individuals that satisfy the " +
+                "following hierarchy structure to recover the secret\n\n")
+        f.write(str(hierarchy_structure))
+    for x in shares:
+
+        with open(x + '_Secret_Share.txt', 'wb') as f:
+            pickle.dump((x, shares[x], hierarchy_structure), f)
 
 
+def recover_secret_from_files(file_paths_list):
+    shares = dict()
+    for x in file_paths_list:
+        with open(x, "rb") as f:
+            u_name, share, hierarchy_structure = pickle.load(f)
+        shares[u_name] = share
+    secret = recover_secret_hierarchical_ss(shares, hierarchy_structure)
+    return secret
