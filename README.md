@@ -35,7 +35,7 @@ Then call
 hss.recover_secret_from_files(file_paths)
 ```
 
-#Example
+Examples:
 
 ```python
 import hierarchical_secret_sharing as hss
@@ -71,3 +71,18 @@ The CEO and CEO2, then decide they must access the secret.  Since the hierarchy 
 file_paths = ['/path/to/CEO_Secret_Share.txt' 'path/to/CEO2_Secret_Share.txt']
 secret = hss.recover_secret_from_files(file_paths)
 print(secret)
+
+```
+
+Additionally, if CEO2, CTO, CFO, and Liz agree that the secret needs to be recovered, the hierarchy_structure would allow them to combine their secret shares to recover the secret.
+
+
+```python
+
+file_paths = ['path/to/CEO2_Secret_Share.txt', 'path/to/Liz_Secret_Share.txt', 
+'path/to/CTO_Secret_Share.txt', 'path/to/CFO_Secret_Share.txt']
+secret = hss.recover_secret_from_files(file_paths)
+print(secret)
+
+```
+
