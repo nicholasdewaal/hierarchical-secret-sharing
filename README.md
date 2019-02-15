@@ -11,8 +11,47 @@ Usage:
 ```python
 import hierarchical_secret_sharing as hss
 ```
-Then create the secret you would like to encrypt, along with some hierarchy structure required for secret recovery.
+Then create the secret you would like to encrypt, along with some hierarchy structure as described below required for secret recovery.
 The secret could be a password, pin code to a safe, cryptocurrency private keys, etc.
+
+
+A hierarchy structure is a tuple beginning with two numbers: n, then m,
+with n <= m, then followed by m tuples and/or strings.
+Each contained tuple also must be a hierarchy structure type thus having to
+follow the same conventions.
+
+A few examples of a hierarchy structure:
+
+
+```python
+(2, 3, ('Nick', 'Alice', 'Bob'))
+
+(3, 4, ('Nick', 'Alice', 'Bob', (1, 3, ('Liz', 'Alex', 'Ana'))
+       )
+)
+```
+
+A company has 2 CEO's (weird), a CFO, CTO, COO, engineers named Liz, Alex, and
+Ana, and in marketing are Mike, Stephanie, and Andy. You want to require a
+consensus of 2 out of 3 groups/individuals consisting of the 2 CEO's, and a
+third group with a more sophisticated consensus structure.
+This structure requiring at least 3 of 5 from either the 3 remaining C-suite,
+or 1 of 3 from development or 3 of 3 from marketing. This is solved using the
+following hierarchy structure:
+
+```python
+(2, 3, 'CEO', 'CEO2',
+       (3, 5, ('CFO',
+               'CTO',
+               'COO',
+               (1, 3, ('Liz', 'Alex', 'Ana')),
+               (3, 3, ('Mike', 'Stephanie', 'Andy'))
+              )
+       )
+)
+
+```
+
 
 ```python
 my_secret = "put secret text here"

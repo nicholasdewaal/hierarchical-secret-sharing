@@ -93,6 +93,8 @@ def secret_is_recoverable(shares, hierarchy_structure):
 
 
 def bytes_to_hex(bytes):
+    '''
+    '''
 
     bytes = bytes.encode('utf-8')
 
@@ -100,6 +102,8 @@ def bytes_to_hex(bytes):
 
 
 def hex_to_utf8(in_hex):
+    '''
+    '''
 
     n = int(in_hex, 16)
     bytes_ints = []
@@ -111,6 +115,8 @@ def hex_to_utf8(in_hex):
 
 
 def hex_ssss_encrypt(n, m, hex_secret):
+    '''
+    '''
 
     assert n <= m
     assert n > 0
@@ -176,6 +182,8 @@ def hierarchical_secret_share_encrypt(string_to_encrypt, hierarchy_structure):
 
 
 def hex_ssss_decrypt(in_shares):
+    '''
+    '''
 
     try:
         for hex_val in in_shares:
@@ -215,16 +223,14 @@ def recover_secret_ss_hex(user_shares, hierarchy_structure):
 
 
 def recover_secret_hierarchical_ss(shares, hierarchy_structure):
+    '''
+    '''
 
     try:
         well_def, _ = is_well_defined_hierarchy(hierarchy_structure)
         assert well_def
-    except AssertionError:
-        print('hierarchy structure of encryption scheme is not well defined!')
-
-    try:
         assert secret_is_recoverable(shares, hierarchy_structure)
-    except:
+    except AssertionError:
         print('hierarchy structure of encryption scheme is not well defined!')
 
     set_trace()
@@ -233,22 +239,26 @@ def recover_secret_hierarchical_ss(shares, hierarchy_structure):
 
 
 def hierarchical_ssss_to_files(string_to_encrypt, hierarchy_structure):
+    '''
+    '''
     shares = hierarchical_secret_share_encrypt(string_to_encrypt,
                                                hierarchy_structure)
     with open('Required_hierarchy_structure.txt', 'w') as f:
         f.write("Use the share files for the individuals that satisfy the " +
                 "following hierarchy structure to recover the secret\n\n")
         f.write(str(hierarchy_structure))
-    for x in shares:
 
-        with open(x + '_Secret_Share.txt', 'wb') as f:
-            pickle.dump((x, shares[x], hierarchy_structure), f)
+    for user_name in shares:
+        with open(user_name + '_Secret_Share.txt', 'wb') as f:
+            pickle.dump((user_name, shares[user_name], hierarchy_structure), f)
 
 
 def recover_secret_from_files(file_paths_list):
+    '''
+    '''
     shares = dict()
-    for x in file_paths_list:
-        with open(x, "rb") as f:
+    for file_nm in file_paths_list:
+        with open(file_nm, "rb") as f:
             u_name, share, hierarchy_structure = pickle.load(f)
         shares[u_name] = share
     secret = recover_secret_hierarchical_ss(shares, hierarchy_structure)
