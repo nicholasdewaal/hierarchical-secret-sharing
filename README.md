@@ -6,6 +6,14 @@ Use at your own risk.
 Additionally, this tool is a work-in-progress, and may not yet be functional, although it should be functional soon.
 
 
+This tool is run in Python 3, and uses secretsharing installed by calling:
+
+pip install secretsharing
+
+If that causes errors, or fails to work, uninstall it, and install the working version using:
+
+pip install --user git+https://github.com/blockstack/secret-sharing
+
 Usage:
 
 ```python
@@ -14,6 +22,10 @@ import hierarchical_secret_sharing as hss
 Then create the secret you would like to encrypt, along with some hierarchy structure as described below required for secret recovery.
 The secret could be a password, pin code to a safe, cryptocurrency private keys, etc.
 
+```python
+my_secret = "put secret text here"
+hierarchy_structure = `define a hierarchy`
+```
 
 A hierarchy structure is a tuple beginning with two numbers: n, then m,
 with n <= m, then followed by m tuples and/or strings.
@@ -31,13 +43,7 @@ A few examples of a hierarchy structure:
 )
 ```
 
-A company has 2 CEO's (weird), a CFO, CTO, COO, engineers named Liz, Alex, and
-Ana, and in marketing are Mike, Stephanie, and Andy. You want to require a
-consensus of 2 out of 3 groups/individuals consisting of the 2 CEO's, and a
-third group with a more sophisticated consensus structure.
-This structure requiring at least 3 of 5 from either the 3 remaining C-suite,
-or 1 of 3 from development or 3 of 3 from marketing. This is solved using the
-following hierarchy structure:
+A company has 2 CEO's (weird), a CFO, CTO, COO, engineers named Liz, Alex, and Ana, and in marketing are Mike, Stephanie, and Andy. You want to require a consensus of 2 out of 3 groups/individuals consisting of the 2 CEO's, and a third group with a more sophisticated consensus structure. This structure requiring at least 3 of 5 from either the 3 remaining CTO, CFO, or COO, or 1 of 3 from engineering or 3 of 3 from marketing. This is solved using the following hierarchy structure:
 
 ```python
 (2, 3, 'CEO', 'CEO2',
@@ -50,12 +56,6 @@ following hierarchy structure:
        )
 )
 
-```
-
-
-```python
-my_secret = "put secret text here"
-hierarchy_structure = `define a hierarchy`
 ```
 
 Then run the following function that will create the secret shares saved as files that should be given to each individual defined in your hierarchy.

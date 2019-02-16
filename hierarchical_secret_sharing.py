@@ -94,6 +94,7 @@ def secret_is_recoverable(shares, hierarchy_structure):
 
 def bytes_to_hex(bytes):
     '''
+    convert a utf-8 string to hexidecimal without the 0x prefix
     '''
 
     bytes = bytes.encode('utf-8')
@@ -103,6 +104,7 @@ def bytes_to_hex(bytes):
 
 def hex_to_utf8(in_hex):
     '''
+    convert hexidecimal without the 0x prefix to a utf-8  string
     '''
 
     n = int(in_hex, 16)
@@ -116,6 +118,9 @@ def hex_to_utf8(in_hex):
 
 def hex_ssss_encrypt(n, m, hex_secret):
     '''
+    takes a secret in hexidecimal, and converts it into m shares where only n
+    of the m shares are required to recover hex_secret, the secret in
+    hexidecimal.
     '''
 
     assert n <= m
@@ -183,6 +188,8 @@ def hierarchical_secret_share_encrypt(string_to_encrypt, hierarchy_structure):
 
 def hex_ssss_decrypt(in_shares):
     '''
+    takes shares in hexidecimal without the 0x prefix, and recovers the secret
+    in hexidecimal without the 0x prefix.
     '''
 
     try:
@@ -224,6 +231,10 @@ def recover_secret_ss_hex(user_shares, hierarchy_structure):
 
 def recover_secret_hierarchical_ss(shares, hierarchy_structure):
     '''
+    Recover a secret from a sufficient list of shares that were created
+    according to the associated hierarchy_structure.
+
+    This returns the original secret.
     '''
 
     try:
@@ -240,6 +251,11 @@ def recover_secret_hierarchical_ss(shares, hierarchy_structure):
 
 def hierarchical_ssss_to_files(string_to_encrypt, hierarchy_structure):
     '''
+    Takes a string intended to be secret, string_to_encrypt, and generates
+    secret shares that follow the given hierarchy structure in the
+    hierarchy_structure tuple you provide. Then the shares are saved in files
+    that are intended to be distributed by the user to those defined in the
+    hierarchy_structure.
     '''
     shares = hierarchical_secret_share_encrypt(string_to_encrypt,
                                                hierarchy_structure)
@@ -255,6 +271,12 @@ def hierarchical_ssss_to_files(string_to_encrypt, hierarchy_structure):
 
 def recover_secret_from_files(file_paths_list):
     '''
+    Takes a list of paths to secret share files created to originally encrypt a
+    secret put in file_paths_list which must be sufficient shares to recover
+    the secret as specified in the hierarchy_structure defined when the shares
+    were created.
+
+    This returns the original secret.
     '''
     shares = dict()
     for file_nm in file_paths_list:
