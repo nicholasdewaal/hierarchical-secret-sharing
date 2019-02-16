@@ -82,14 +82,14 @@ import hierarchical_secret_sharing as hss
 secret = "My super secret text"
 
 hierarchy_structure = (2, 3, 'CEO', 'CEO2',
-       (3, 5, ('CFO',
-               'CTO',
-               'COO',
-               (1, 3, ('Liz', 'Alex', 'Ana')),
-               (3, 3, ('Mike', 'Stephanie', 'Andy'))
-              )
-       )
-)
+                             (3, 5, ('CFO',
+                                     'CTO',
+                                     'COO',
+                                     (1, 3, ('Liz', 'Alex', 'Ana')),
+                                     (3, 3, ('Mike', 'Stephanie', 'Andy'))
+                                    )
+                             )
+                      )
 
 ```
 

@@ -1,8 +1,7 @@
 
-
-from secretsharing import SecretSharer
 import pickle
-from pdb import set_trace
+from secretsharing import SecretSharer
+from ipdb import set_trace
 
 '''
 hierarchy_structure is a tuple beginning with two numbers: n, then m,
@@ -45,7 +44,7 @@ def is_well_defined_hierarchy(hierarchy_structure):
 
     _empty_set = set()
     all_names = set()
-    if type(hierarchy_structure) is str:
+    if isinstance(hierarchy_structure, str):
         if hierarchy_structure in all_names:
             print('You cannot have the same person in two parts of the hierarchy_structure')
             return False
@@ -80,16 +79,13 @@ def secret_is_recoverable(shares, hierarchy_structure):
     n, m, hierarchy = hierarchy_structure
     num_shares_available = 0
     for ii, sub_hierarchy in enumerate(hierarchy):
-        if type(sub_hierarchy) is str:
-            if len(shares[sub_hierarchy]) > 0:
+        if isinstance(sub_hierarchy, str):
+            if shares[sub_hierarchy] != '':
                 num_shares_available += 1
         elif secret_is_recoverable(shares, sub_hierarchy):
-                num_shares_available += 1
+            num_shares_available += 1
 
-    if num_shares_available > n:
-        return True
-    else:
-        return False
+    return num_shares_available > n
 
 
 def bytes_to_hex(bytes):
@@ -157,7 +153,7 @@ def recursive_ss_encrypt_hex(hex_to_encrypt, hierarchy_structure):
     shares = hex_ssss_encrypt(n, m, hex_to_encrypt)
 
     for ii, sub_hierarchy in enumerate(hierarchy):
-        if type(sub_hierarchy) is str:
+        if isinstance(sub_hierarchy, str):
             assigned_shares[sub_hierarchy] = shares[ii]
         else:
             sub_shares = recursive_ss_encrypt_hex(shares[ii], sub_hierarchy)
@@ -176,7 +172,7 @@ def hierarchical_secret_share_encrypt(string_to_encrypt, hierarchy_structure):
         well_def, _ = is_well_defined_hierarchy(hierarchy_structure)
         assert well_def
         # can't have parent of hierarchy_structure be 1 out of a group.
-        if hierarchy_structure[0] <= 1 or type(hierarchy_structure) is str:
+        if hierarchy_structure[0] <= 1 or isinstance(hierarchy_structure, str):
             raise AssertionError
     except AssertionError:
         print('hierarchy structure of encryption scheme is not well defined!')
@@ -214,7 +210,7 @@ def recover_secret_ss_hex(user_shares, hierarchy_structure):
     user_names = user_shares.keys()
 
     for ii, sub_hierarchy in enumerate(hierarchy):
-        if type(sub_hierarchy) is str:
+        if isinstance(sub_hierarchy, str):
             if sub_hierarchy in user_names:
                 recovery_shares.append(user_shares[sub_hierarchy])
         else:
