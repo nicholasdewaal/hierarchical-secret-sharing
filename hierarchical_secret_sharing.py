@@ -225,9 +225,9 @@ def recover_secret_ss_hex(user_shares, hierarchy_structure):
         return hex_ssss_decrypt(recovery_shares)
 
 
-def recover_secret_hierarchical_ss(shares, hierarchy_structure):
+def recover_hierarchical_ss(shares, hierarchy_structure):
     '''
-    Recover a secret from a sufficient list of shares that were created
+    Recover a secret from a sufficient dictionary of shares that were created
     according to the associated hierarchy_structure.
 
     This returns the original secret.
@@ -245,39 +245,59 @@ def recover_secret_hierarchical_ss(shares, hierarchy_structure):
     return hex_to_utf8(hex_secret)
 
 
-def hierarchical_ssss_to_files(string_to_encrypt, hierarchy_structure):
+def hierarchical_ssss_to_files(strings_to_encrypt, hierarchy_structure):
     '''
-    Takes a string intended to be secret, string_to_encrypt, and generates
-    secret shares that follow the given hierarchy structure in the
+    Takes a list of strings intended to be secret, strings_to_encrypt, and
+    generates secret shares that follow the given hierarchy structure in the
     hierarchy_structure tuple you provide. Then the shares are saved in files
     that are intended to be distributed by the user to those defined in the
     hierarchy_structure.
     '''
-    shares = hierarchical_secret_share_encrypt(string_to_encrypt,
-                                               hierarchy_structure)
+
     with open('Required_hierarchy_structure.txt', 'w') as f:
         f.write("Use the share files for the individuals that satisfy the " +
                 "following hierarchy structure to recover the secret\n\n")
         f.write(str(hierarchy_structure))
 
-    for user_name in shares:
+    all_shares = defaultdict(dict)
+
+    for str_to_encrypt in strings_to_encrypt:
+        shares = hierarchical_secret_share_encrypt(string_to_encrypt,
+                                                hierarchy_structure)
+        for ii, user_name in enumerate(shares):
+            all_shares[user_name][ii] = shares[user_name]
+
+    for user_name in all_shares:
         with open(user_name + '_Secret_Share.txt', 'wb') as f:
-            pickle.dump((user_name, shares[user_name], hierarchy_structure), f)
+            pickle.dump((user_name, all_shares[user_name],
+                         hierarchy_structure), f)
 
 
-def recover_secret_from_files(file_paths_list):
+def recover_secrets_from_files(file_paths_list):
     '''
-    Takes a list of paths to secret share files created to originally encrypt a
-    secret put in file_paths_list which must be sufficient shares to recover
-    the secret as specified in the hierarchy_structure defined when the shares
+    Takes a list of paths to secret share files created to originally encrypt
+    secrets put in file_paths_list which must be sufficient shares to recover
+    the secrets as specified in the hierarchy_structure defined when the shares
     were created.
 
-    This returns the original secret.
+    This returns the original secrets.
     '''
-    shares = dict()
+    all_shares = dict()
+    all_secrets = list()
     for file_nm in file_paths_list:
         with open(file_nm, "rb") as f:
-            u_name, share, hierarchy_structure = pickle.load(f)
-        shares[u_name] = share
-    secret = recover_secret_hierarchical_ss(shares, hierarchy_structure)
-    return secret
+            u_name, shares, hierarchy_structure = pickle.load(f)
+        all_shares[u_name] = shares
+
+    transposed_shares = defaultdict(dict)
+    for user_nm in all_shares:
+        for idx in all_shares[user_nm]:
+            transposed_shares[idx][user_nm] = all_shares[user_nm][idx]
+
+    for idx in transposed_shares:
+        next_secret = recover_hierarchical_ss(transposed_shares[idx],
+                                              hierarchy_structure)
+        all_secrets.append(next_secret)
+
+    return all_secrets
+
