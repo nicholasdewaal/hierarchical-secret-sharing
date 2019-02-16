@@ -19,11 +19,11 @@ Usage:
 ```python
 import hierarchical_secret_sharing as hss
 ```
-Then create the secret you would like to encrypt, along with some hierarchy structure as described below required for secret recovery.
-The secret could be a password, pin code to a safe, cryptocurrency private keys, etc.
+Then create a list of secrets you would like to encrypt, along with some hierarchy structure as described below required for secret recovery.
+The secrets could be a passwords, pin codes to a safe, cryptocurrency private keys, etc.
 
 ```python
-my_secret = "put secret text here"
+my_secrets = ["put 1st secret here", "put 2nd secret here", "...etc"]
 hierarchy_structure = `define a hierarchy`
 ```
 
@@ -61,7 +61,7 @@ A company has 2 CEO's (weird), a CFO, CTO, COO, engineers named Liz, Alex, and A
 Then run the following function that will create the secret shares saved as files that should be given to each individual defined in your hierarchy.
 
 ```python
-hss.hierarchical_ssss_to_files(my_secret, hierarchy_structure)
+hss.hierarchical_ssss_to_files(my_secrets, hierarchy_structure)
 ```
 
 Distribute the secret key file shares created above to those respective friends or trusted secret holders along with the hierarchy description file Required_hierarchy_structure.txt which describes the social hierarchy required of them to recover your secret.
@@ -97,23 +97,23 @@ Create the secret file shares:
 
 ```python
 
-hss.hierarchical_ssss_to_files(my_secret, hierarchy_structure)
+hss.hierarchical_ssss_to_files(my_secrets, hierarchy_structure)
 ```
 
 Distribute the corresponding files to CFO, CTO, COO, CEO, CEO2, Liz, Alex, Ana, Mike, Stephanie, and Nick.
 
-The CEO and CEO2, then decide they must access the secret.  Since the hierarchy only requires 2 of 3 at that level, their keys will be enough to unlock the secret by doing the following with their private share files:
+The CEO and CEO2, then decide they must access the secrets.  Since the hierarchy only requires 2 of 3 at that level, their keys will be enough to unlock the secrets by doing the following with their private share files:
 
 
 ```python
 
 file_paths = ['/path/to/CEO_Secret_Share.txt' 'path/to/CEO2_Secret_Share.txt']
-secret = hss.recover_secret_from_files(file_paths)
-print(secret)
+secrets = hss.recover_secret_from_files(file_paths)
+print(secrets)
 
 ```
 
-Additionally, if CEO2, CTO, CFO, and Liz agree that the secret needs to be recovered, the hierarchy_structure would allow them to combine their secret shares to recover the secret.
+Additionally, if CEO2, CTO, CFO, and Liz agree that the secret needs to be recovered, the hierarchy_structure would allow them to combine their secret shares to recover the secrets.
 
 
 ```python
@@ -121,7 +121,6 @@ Additionally, if CEO2, CTO, CFO, and Liz agree that the secret needs to be recov
 file_paths = ['path/to/CEO2_Secret_Share.txt', 'path/to/Liz_Secret_Share.txt', 
 'path/to/CTO_Secret_Share.txt', 'path/to/CFO_Secret_Share.txt']
 secret = hss.recover_secret_from_files(file_paths)
-print(secret)
+print(secrets)
 
 ```
-
