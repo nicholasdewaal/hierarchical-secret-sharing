@@ -1,6 +1,7 @@
 
 import pickle
 from secretsharing import SecretSharer
+from collections import defaultdict
 from ipdb import set_trace
 
 '''
@@ -240,7 +241,7 @@ def recover_hierarchical_ss(shares, hierarchy_structure):
     except AssertionError:
         print('hierarchy structure of encryption scheme is not well defined!')
 
-    set_trace()
+    # set_trace()
     hex_secret = recover_secret_ss_hex(shares, hierarchy_structure)
     return hex_to_utf8(hex_secret)
 
@@ -261,10 +262,10 @@ def hierarchical_ssss_to_files(strings_to_encrypt, hierarchy_structure):
 
     all_shares = defaultdict(dict)
 
-    for str_to_encrypt in strings_to_encrypt:
-        shares = hierarchical_secret_share_encrypt(string_to_encrypt,
+    for ii, str_to_encrypt in enumerate(strings_to_encrypt):
+        shares = hierarchical_secret_share_encrypt(str_to_encrypt,
                                                 hierarchy_structure)
-        for ii, user_name in enumerate(shares):
+        for user_name in shares:
             all_shares[user_name][ii] = shares[user_name]
 
     for user_name in all_shares:

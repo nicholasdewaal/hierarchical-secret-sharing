@@ -79,7 +79,7 @@ Examples:
 ```python
 import hierarchical_secret_sharing as hss
 
-secret = "My super secret text"
+my_secrets = ["put 1st secret here", "put 2nd secret here", "...etc"]
 
 hierarchy_structure = (2, 3, 'CEO', 'CEO2',
                              (3, 5, ('CFO',
