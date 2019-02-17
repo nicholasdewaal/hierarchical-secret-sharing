@@ -79,14 +79,15 @@ def secret_is_recoverable(shares, hierarchy_structure):
 
     n, m, hierarchy = hierarchy_structure
     num_shares_available = 0
+    all_users = set(shares.keys())
     for ii, sub_hierarchy in enumerate(hierarchy):
         if isinstance(sub_hierarchy, str):
-            if shares[sub_hierarchy] != '':
+            if sub_hierarchy in all_users:
                 num_shares_available += 1
         elif secret_is_recoverable(shares, sub_hierarchy):
             num_shares_available += 1
 
-    return num_shares_available > n
+    return num_shares_available >= n
 
 
 def bytes_to_hex(bytes):
@@ -209,6 +210,7 @@ def recover_secret_ss_hex(user_shares, hierarchy_structure):
     n, m, hierarchy = hierarchy_structure
     recovery_shares = list()
     user_names = user_shares.keys()
+    set_trace()
 
     for ii, sub_hierarchy in enumerate(hierarchy):
         if isinstance(sub_hierarchy, str):
@@ -221,7 +223,7 @@ def recover_secret_ss_hex(user_shares, hierarchy_structure):
 
     # if only one share is required to recover, then that is the result
     if n == 1:
-        return user_shares[0]
+        return recovery_shares[0]
     else:
         return hex_ssss_decrypt(recovery_shares)
 
@@ -241,7 +243,6 @@ def recover_hierarchical_ss(shares, hierarchy_structure):
     except AssertionError:
         print('hierarchy structure of encryption scheme is not well defined!')
 
-    # set_trace()
     hex_secret = recover_secret_ss_hex(shares, hierarchy_structure)
     return hex_to_utf8(hex_secret)
 
