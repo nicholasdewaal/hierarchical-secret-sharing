@@ -1,7 +1,7 @@
 
 import pickle
-from secretsharing import SecretSharer
 from collections import defaultdict
+from secretsharing import SecretSharer
 from ipdb import set_trace
 
 '''
@@ -26,13 +26,14 @@ This structure requiring at least 3 of 5 from either the 3 remaining C-suite,
 or 1 of 3 from development or 3 of 3 from marketing. This is solved using the
 following hierarchy_structure:
 
-(2, 3, 'CEO', 'CEO2',
-       (3, 5, ('CFO',
-               'CTO',
-               'COO',
-               (1, 3, ('Liz', 'Alex', 'Ana')),
-               (3, 3, ('Mike', 'Stephanie', 'Andy'))
-              )
+(2, 3, ('CEO', 'CEO2',
+        (3, 5, ('CFO',
+                'CTO',
+                'COO',
+                (1, 3, ('Liz', 'Alex', 'Ana')),
+                (3, 3, ('Mike', 'Stephanie', 'Andy'))
+               )
+        )
        )
 )
 '''
@@ -55,7 +56,7 @@ def is_well_defined_hierarchy(hierarchy_structure):
     else:
         try:
             n, m, hierarchy = hierarchy_structure
-        except:
+        except ValueError:
             return False, all_names
 
         if n > m or len(hierarchy) != m:  # best n out of m, so n <= m
@@ -90,14 +91,14 @@ def secret_is_recoverable(shares, hierarchy_structure):
     return num_shares_available >= n
 
 
-def bytes_to_hex(bytes):
+def bytes_to_hex(in_bytes):
     '''
     convert a utf-8 string to hexidecimal without the 0x prefix
     '''
 
-    bytes = bytes.encode('utf-8')
+    in_bytes = in_bytes.encode('utf-8')
 
-    return ''.join('{:x}'.format(b) for b in bytes)
+    return ''.join('{:x}'.format(b) for b in in_bytes)
 
 
 def hex_to_utf8(in_hex):
@@ -121,16 +122,11 @@ def hex_ssss_encrypt(n, m, hex_secret_idx):
     hexidecimal.
     '''
 
-    assert n <= m
-    assert n > 0
-    assert m > 0
+    assert n <= m and n > 0 and m > 0
 
     hex_secret = hex_secret_idx[0]
 
-    if len(hex_secret_idx) > 1:
-        idx_list = hex_secret_idx[1:]
-    else:
-        idx_list = []
+    idx_list = hex_secret_idx[1:] if len(hex_secret_idx) > 1 else []
 
     try:
         int(hex_secret, 16)
@@ -210,7 +206,7 @@ def hex_ssss_decrypt(in_shares):
     except ValueError:
         print('not a valid hexidecimal value.')
 
-    not_final_idx = (len(indexed_hex) > 2)
+    not_final_idx = (len(in_shares[0]) > 2)
 
     # remaining indices should match in all shares used to reconstruct
     if not_final_idx:
@@ -239,14 +235,15 @@ def recover_secret_ss_hex(user_shares, hierarchy_structure):
         else:
             recovery_sub_shares = recover_secret_ss_hex(user_shares,
                                                         sub_hierarchy)
-            recovery_shares.extend(recovery_sub_shares)
+            if recovery_sub_shares: # if it isn't None from the return below
+                recovery_shares.append(recovery_sub_shares)
 
     # if not enough keys to open this gate, it can't help
     if len(recovery_shares) < n:
-        return []
+        return None
     # if only one share is required to recover, then that is the result
     if n == 1:
-        return [[recovery_shares[0][0]] + recovery_shares[0][2:]]
+        return [recovery_shares[0][0]] + recovery_shares[0][2:]
     else:
         return hex_ssss_decrypt(recovery_shares)
 
@@ -325,4 +322,3 @@ def recover_secrets_from_files(file_paths_list):
         all_secrets.append(next_secret)
 
     return all_secrets
-
