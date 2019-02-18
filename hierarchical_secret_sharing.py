@@ -2,7 +2,6 @@
 import pickle
 from collections import defaultdict
 from secretsharing import SecretSharer
-from ipdb import set_trace
 
 '''
 hierarchy_structure is a tuple beginning with two numbers: n, then m,
