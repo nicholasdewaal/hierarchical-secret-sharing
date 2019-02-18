@@ -114,7 +114,7 @@ def hex_to_utf8(in_hex):
     return bytes(bytes_ints[::-1]).decode('utf-8')
 
 
-def hex_ssss_encrypt(n, m, hex_secret):
+def hex_ssss_encrypt(n, m, hex_secret_idx):
     '''
     takes a secret in hexidecimal, and converts it into m shares where only n
     of the m shares are required to recover hex_secret, the secret in
@@ -125,17 +125,32 @@ def hex_ssss_encrypt(n, m, hex_secret):
     assert n > 0
     assert m > 0
 
+    # if len(hex_secret_idx) >= 2:
+        # set_trace()
+    hex_secret = hex_secret_idx[0]
+
+    if len(hex_secret_idx) > 1:
+        idx_list = hex_secret_idx[1:]
+    else:
+        idx_list = []
+
     try:
         int(hex_secret, 16)
     except ValueError:
         print('not a valid hexidecimal value.')
     # There's no need to encrypt if only one of m needs to provide the share
     if n == 1:
-        shares = [hex_secret] * m
+        # add indexing to the string for consistency
+        shares = [str(ii+1) + '-' + hex_secret for ii in range(m)]
     else:
         shares = SecretSharer.split_secret(hex_secret, n, m)
     # SecretSharer prepends numbering, and you can only return raw hex values.
-    return [x[2:] for x in shares]
+    altered_shares = []
+    for x in shares:
+        dash_idx = x.find('-')
+        next_idx_share = [x[dash_idx+1:], x[:dash_idx]] + idx_list
+        altered_shares.append(next_idx_share)
+    return altered_shares
 
 
 def recursive_ss_encrypt_hex(hex_to_encrypt, hierarchy_structure):
@@ -179,7 +194,8 @@ def hierarchical_secret_share_encrypt(string_to_encrypt, hierarchy_structure):
     except AssertionError:
         print('hierarchy structure of encryption scheme is not well defined!')
 
-    hex_secret = bytes_to_hex(string_to_encrypt)
+    # recursive_ss_encrypt_hex requires a list
+    hex_secret = [bytes_to_hex(string_to_encrypt)]
 
     return recursive_ss_encrypt_hex(hex_secret, hierarchy_structure)
 
@@ -190,15 +206,23 @@ def hex_ssss_decrypt(in_shares):
     in hexidecimal without the 0x prefix.
     '''
 
-    try:
-        for hex_val in in_shares:
-            int(hex_val, 16)
+    try: # check that all are valid hexidecimal
+        for indexed_hex in in_shares:
+            int(indexed_hex[0], 16)
     except ValueError:
         print('not a valid hexidecimal value.')
-    # SecretSharer requires prepended numbering
-    shares = [str(ii + 1) + '-' + x for ii, x in enumerate(in_shares)]
 
-    return SecretSharer.recover_secret(shares)
+    not_final_idx = (len(indexed_hex) > 2)
+
+    # remaining indices should match in all shares used to reconstruct
+    if not_final_idx:
+        assert sum(x[2:]==in_shares[0][2:] for x in in_shares)==len(in_shares)
+
+    set_trace()
+    shares = [str(x[1]) + '-' + x[0] for x in in_shares]
+
+    result_hex = SecretSharer.recover_secret(shares)
+    return [result_hex] + in_shares[0][2:] if not_final_idx else result_hex
 
 
 def recover_secret_ss_hex(user_shares, hierarchy_structure):
@@ -210,7 +234,6 @@ def recover_secret_ss_hex(user_shares, hierarchy_structure):
     n, m, hierarchy = hierarchy_structure
     recovery_shares = list()
     user_names = user_shares.keys()
-    set_trace()
 
     for ii, sub_hierarchy in enumerate(hierarchy):
         if isinstance(sub_hierarchy, str):
@@ -223,7 +246,7 @@ def recover_secret_ss_hex(user_shares, hierarchy_structure):
 
     # if only one share is required to recover, then that is the result
     if n == 1:
-        return recovery_shares[0]
+        return [[recovery_shares[0][0]] + recovery_shares[0][2:]]
     else:
         return hex_ssss_decrypt(recovery_shares)
 
