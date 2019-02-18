@@ -35,6 +35,11 @@ following hierarchy_structure:
         )
        )
 )
+
+Definition of an INDEXED SHARE:
+An indexed share takes the form [a secret share in hex, index of the share for
+recovering the secret, index of the share used for recovering in the next level
+up in the hierarchy of secrets, etc.]
 '''
 
 def is_well_defined_hierarchy(hierarchy_structure):
@@ -117,10 +122,17 @@ def hex_to_utf8(in_hex):
 def hex_ssss_encrypt(n, m, hex_secret_idx):
     '''
     hex_secret_idx is a list where the first element is secret in hex, and the
-    remaining elements are indices used for recovering sub-secrets in the
-    secret hierarchy.
+    remaining elements are indices used for recovering sub-secrets further up
+    in the secret hierarchy. See the definition of an INDEXED SHARE above.
+
     The secret is converted into m shares where only n of the m shares are
     required to recover the secret in hexidecimal.
+
+    Similar to the structure of hex_secret_idx, the returned value
+    altered_shares, is a list of shares with each share being a list where
+    the first element is the share, the 2nd element is its index for recovering
+    the currently encrypted secret, and the remaining elements indices for
+    recovering secrets further up in the hierarchy of secrets.
     '''
 
     assert n <= m and n > 0 and m > 0
@@ -200,8 +212,13 @@ def hierarchical_secret_share_encrypt(string_to_encrypt, hierarchy_structure):
 
 def hex_ssss_decrypt(in_shares):
     '''
-    takes shares in hexidecimal without the 0x prefix, and recovers the secret
-    in hexidecimal without the 0x prefix.
+    in_shares are indexed shares (as defined above) in hexidecimal without the
+    0x prefix, and recovers the secret in hexidecimal without the 0x prefix.
+
+    If the recovered secret is the final secret, then the recovered hexidecimal
+    secret is returned, otherwise, an indexed share (as defined above) is
+    returned with the indices for recovering secrets higher up in the hierarchy
+    of secrets.
     '''
 
     try: # check that all are valid hexidecimal

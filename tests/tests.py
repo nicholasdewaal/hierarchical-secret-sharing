@@ -1,5 +1,6 @@
 
 import hierarchical_secret_sharing as hss
+import pytest
 
 
 def file_names(in_names):
