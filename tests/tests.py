@@ -14,6 +14,11 @@ secret_combos = [["put 1st secret here", "put 2nd secret here", "...etc"],
 
 
 def check_encrypt_decrypt(secret_combos, hierarchy_structure, file_shares):
+    '''
+    Checks if each list of secrets in secret_combos given a hierarchy_structure
+    and list of shares of files to recover secrets, recovers those secrets
+    properly.
+    '''
     for secrets in secret_combos:
         hss.hierarchical_ssss_to_files(secrets, hierarchy_structure)
         rec_secrets = hss.recover_secrets_from_files(file_shares)

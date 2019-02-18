@@ -116,15 +116,19 @@ def hex_to_utf8(in_hex):
 
 def hex_ssss_encrypt(n, m, hex_secret_idx):
     '''
-    takes a secret in hexidecimal, and converts it into m shares where only n
-    of the m shares are required to recover hex_secret, the secret in
-    hexidecimal.
+    hex_secret_idx is a list where the first element is secret in hex, and the
+    remaining elements are indices used for recovering sub-secrets in the
+    secret hierarchy.
+    The secret is converted into m shares where only n of the m shares are
+    required to recover the secret in hexidecimal.
     '''
 
     assert n <= m and n > 0 and m > 0
 
-    hex_secret = hex_secret_idx[0]
+    hex_secret = hex_secret_idx[0] # the first element is always the secret
 
+    # the remaining elements, if any, are indices used for recovering
+    # sub-secrets in the hierarchy of secrets.
     idx_list = hex_secret_idx[1:] if len(hex_secret_idx) > 1 else []
 
     try:
@@ -137,7 +141,8 @@ def hex_ssss_encrypt(n, m, hex_secret_idx):
         shares = [str(ii+1) + '-' + hex_secret for ii in range(m)]
     else:
         shares = SecretSharer.split_secret(hex_secret, n, m)
-    # SecretSharer prepends numbering, and you can only return raw hex values.
+    # SecretSharer prepends numbering; the indices keep track of these for
+    # using the appropriate index as walking up the hierarchy of secrets.
     altered_shares = []
     for x in shares:
         dash_idx = x.find('-')

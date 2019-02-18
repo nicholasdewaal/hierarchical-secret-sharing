@@ -3,9 +3,6 @@
 This tool is experimental, and may or may not be a secure method of encryption.
 Use at your own risk.
 
-Additionally, this tool is a work-in-progress, and may not yet be functional, although it should be functional soon.
-
-
 This tool is run in Python 3, and uses secretsharing installed by calling:
 
 pip install secretsharing
@@ -32,12 +29,19 @@ with n <= m, then followed by m tuples and/or strings.
 Each contained tuple also must be a hierarchy structure type thus having to
 follow the same conventions.
 
-A few examples of a hierarchy structure:
+At least n of the m elements of the hierarchy structure tuple are required in order to recover the list of shared secrets.
 
 
+A few examples of a hierarchy structure here may help.
+
+For the following hierarchy structure, only 2 out of 3 of Nick, Alice or Bob are required to produce their shares to recover the list of secrets:
 ```python
 (2, 3, ('Nick', 'Alice', 'Bob'))
+```
 
+For the following hierarchy structure, only 3 out of 4 of Nick, Alice, Bob, and (1 out of 3 of Liz, Alex, and Ana) are required to produce their shares to recover the list of secrets:
+```python
+```python
 (3, 4, ('Nick', 'Alice', 'Bob', (1, 3, ('Liz', 'Alex', 'Ana'))
        )
 )
