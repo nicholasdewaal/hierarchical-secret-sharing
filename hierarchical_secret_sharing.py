@@ -125,8 +125,6 @@ def hex_ssss_encrypt(n, m, hex_secret_idx):
     assert n > 0
     assert m > 0
 
-    # if len(hex_secret_idx) >= 2:
-        # set_trace()
     hex_secret = hex_secret_idx[0]
 
     if len(hex_secret_idx) > 1:
@@ -218,7 +216,6 @@ def hex_ssss_decrypt(in_shares):
     if not_final_idx:
         assert sum(x[2:]==in_shares[0][2:] for x in in_shares)==len(in_shares)
 
-    set_trace()
     shares = [str(x[1]) + '-' + x[0] for x in in_shares]
 
     result_hex = SecretSharer.recover_secret(shares)
@@ -244,6 +241,9 @@ def recover_secret_ss_hex(user_shares, hierarchy_structure):
                                                         sub_hierarchy)
             recovery_shares.extend(recovery_sub_shares)
 
+    # if not enough keys to open this gate, it can't help
+    if len(recovery_shares) < n:
+        return []
     # if only one share is required to recover, then that is the result
     if n == 1:
         return [[recovery_shares[0][0]] + recovery_shares[0][2:]]
