@@ -5,11 +5,15 @@ Use at your own risk.
 
 This tool is run in Python 3, and uses secretsharing installed by calling:
 
+```bash
 pip install secretsharing
+```
 
 If that causes errors, or fails to work, uninstall it, and install the working version using:
 
+```bash
 pip install --user git+https://github.com/blockstack/secret-sharing
+```
 
 Usage:
 
