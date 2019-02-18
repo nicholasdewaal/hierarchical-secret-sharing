@@ -20,7 +20,7 @@ Usage:
 import hierarchical_secret_sharing as hss
 ```
 Then create a list of secrets you would like to encrypt, along with some hierarchy structure as described below required for secret recovery.
-The secrets could be a passwords, pin codes to a safe, cryptocurrency private keys, etc.
+The secrets could be passwords, pin codes to a safe, cryptocurrency private keys, etc.
 
 ```python
 my_secrets = ["put 1st secret here", "put 2nd secret here", "...etc"]
