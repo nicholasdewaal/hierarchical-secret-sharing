@@ -46,13 +46,14 @@ A few examples of a hierarchy structure:
 A company has 2 CEO's (weird), a CFO, CTO, COO, engineers named Liz, Alex, and Ana, and in marketing are Mike, Stephanie, and Andy. You want to require a consensus of 2 out of 3 groups/individuals consisting of the 2 CEO's, and a third group with a more sophisticated consensus structure. This structure requiring at least 3 of 5 from either the 3 remaining CTO, CFO, or COO, or 1 of 3 from engineering or 3 of 3 from marketing. This is solved using the following hierarchy structure:
 
 ```python
-(2, 3, 'CEO', 'CEO2',
-       (3, 5, ('CFO',
-               'CTO',
-               'COO',
-               (1, 3, ('Liz', 'Alex', 'Ana')),
-               (3, 3, ('Mike', 'Stephanie', 'Andy'))
-              )
+(2, 3, ('CEO', 'CEO2',
+        (3, 5, ('CFO',
+                'CTO',
+                'COO',
+                (1, 3, ('Liz', 'Alex', 'Ana')),
+                (3, 3, ('Mike', 'Stephanie', 'Andy'))
+               )
+        )
        )
 )
 
